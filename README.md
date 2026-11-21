@@ -25,16 +25,17 @@ deep_learning.ipynb    # full analysis: data checks, model, comparison, error an
 data/cwru/manifest.csv # file number -> label, fault size, motor load
 data/cwru/*.mat        # raw CWRU files (not in git, see below)
 figures/               # figures saved by the notebook
+requirements.txt       # pinned Python dependencies
 ```
 
 ## Setup
 
-Python 3.11 or later:
+Tested with Python 3.15.2. Package versions are pinned in [`requirements.txt`](requirements.txt).
 
 ```bash
 python -m venv .venv
 source .venv/bin/activate
-pip install numpy pandas scipy scikit-learn matplotlib seaborn torch jupyterlab
+pip install -r requirements.txt
 ```
 
 The notebook uses CUDA or Apple MPS when available and falls back to the CPU otherwise.
