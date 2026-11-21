@@ -12,7 +12,7 @@ This project is a one-dimensional convolutional neural network (1D CNN) trained 
 
 ### Data
 
-I used the CWRU Bearing Data Center's 12 kHz drive-end data (Case Western Reserve University, n.d.), which is a standard benchmark for vibration-based fault diagnosis (Smith & Randall, 2015). In the data, the faults were seeded into the test bearings by electro-discharge machining (EDM) at three diameters (0.007, 0.014 and 0.021 inches) in three locations (inner race, rolling element or "ball", and outer race at the 6 o'clock position). Each condition was recorded at four motor loads (0–3 hp, roughly 1,797–1,730 rpm). With four normal-baseline recordings, the project uses 40 files (Table 1). The task is four-class classification of fixed-length windows: normal, inner-race fault, ball fault and outer-race fault.
+I used the CWRU Bearing Data Center's 12 kHz drive-end data (Case Western Reserve University, n.d.), which is a standard benchmark for vibration-based fault diagnosis (Smith & Randall, 2015). In the data, the faults were seeded into the test bearings by electro-discharge machining (EDM) at three diameters (0.007, 0.014 and 0.021 inches) in three locations (inner race, rolling element or "ball", and outer race at the 6 o'clock position). Each condition was recorded at four motor loads (0–3 hp, roughly 1,797–1,730 rpm). With four normal-baseline recordings, the project uses totol of 40 files (Table 1). For this project, our task is four-class classification of fixed-length windows: normal, inner-race fault, ball fault and outer-race fault.
 
 **Table 1**
 *Files used and how they are split in the main experiment*
@@ -28,15 +28,15 @@ I used the CWRU Bearing Data Center's 12 kHz drive-end data (Case Western Reserv
 
 ### Data Checks Reported as Findings
 
-Three checks changed how the data had to be handled.
+According to the initial findings, these three checks changed how the data had to be handled.
 
-1. **The normal baseline is sampled at 48 kHz, not 12 kHz.** The fault files are 12 kHz, but the normal files are about twice as long (about 244,000–485,000 samples against about 121,000). I tested the sampling rate from the spectrum. With 12 kHz assumed, the strongest low-frequency peak of normal file 97 falls at 40 Hz; with 48 kHz assumed, it falls at 30 Hz, matching the recorded shaft speed of 1,796 rpm (29.9 Hz). I therefore decimated the normal signals by 4 with an anti-aliasing filter. Without this step, the network could separate normal from faulty windows by sampling rate alone.
-2. **File 99 contains two recordings.** Besides its own `X099_DE_time` channel, file 99 also stores file 98's `X098_*` channels. Code that takes the first drive-end key it finds would silently load file 98's signal twice. I select the channel whose number matches the file name.
-3. **There is only one healthy bearing.** All four normal files come from the same bearing at different loads. Fault classes can be split by physical bearing, but the normal class cannot. Vieira et al. (2025) identify the same structural leak in CWRU. Normal test performance therefore measures generalisation across loads, not across bearings.
+1. **The normal baseline is sampled at 48 kHz, not 12 kHz.** The fault files are 12 kHz, but the normal files are about twice as long (about 244,000–485,000 samples against about 121,000). I tested the sampling rate from the spectrum. With 12 kHz assumed, the strongest low-frequency peak of normal file 97 falls at 40 Hz; with 48 kHz assumed, and it falls at 30 Hz, matching the recorded shaft speed of 1,796 rpm (29.9 Hz). So, I decided to decimated the normal signals by 4 with an anti-aliasing filter, without this step; the network could separate normal from faulty windows by sampling rate alone.
+2. **File 99 contains two recordings.** Besides its own `X099_DE_time` channel, file 99 also stores file 98's `X098_*` channels. Code that takes the first drive-end key it finds would silently load file 98's signal twice, so I select the channel whose number matches the file name.
+3. **There is only one healthy bearing.** All the four normal files come from the same bearing at different loads. Fault classes can be split by physical bearing, but the normal class cannot. Vieira et al. (2025) identify the same structural leak in CWRU. Normal test performance therefore measures generalisation across loads, not across bearings.
 
 ### Windowing and Splits
 
-Each signal was cut into 2,048-sample windows (about 0.17 s, or roughly five shaft revolutions at 12 kHz). Training windows overlap by 75% (stride 512) for augmentation; validation and test windows do not overlap (stride 2,048), so no test sample is counted twice. In the main experiment this gives 4,574 training windows (349 normal, 1,406 inner race, 1,408 ball, 1,411 outer race), 414 validation windows and 767 test windows (59 normal, 236 per fault class): 5,755 in total. The leave-one-fault-size-out splits (see Experimental Comparison) contain 5,751–5,755 windows. Windows were standardised with a single mean and standard deviation computed on the training set only.
+Each signal was cut into 2,048-sample windows (about 0.17 s, or roughly five shaft revolutions at 12 kHz), and the training windows overlap by 75% (stride 512) for augmentation; validation and test windows do not overlap (stride 2,048), so no test sample is counted twice. In the main experiment this gives 4,574 training windows (349 normal, 1,406 inner race, 1,408 ball, 1,411 outer race), 414 validation windows and 767 test windows (59 normal, 236 per fault class): 5,755 in total. The leave-one-fault-size-out splits (see Experimental Comparison) contain 5,751–5,755 windows. Windows were standardised with a single mean and standard deviation computed on the training set only.
 
 Figure 1 shows one training window per class.
 
